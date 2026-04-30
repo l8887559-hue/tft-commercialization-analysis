@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>金铲铲商业化结构 · 可视化方案</title>
+<style>
+  :root{
+    --bg:#f6f8fc;
+    --bg2:#ffffff;
+    --panel:#ffffff;
+    --panel2:#f1f4fa;
+    --line:rgba(15,23,42,.08);
+    --line-strong:rgba(15,23,42,.14);
+    --text:#1f2540;
+    --text-strong:#0f172a;
+    --muted:#6b7389;
+    --gold:#d49321;
+    --gold2:#b97c0f;
+    --purple:#7a52d4;
+    --cyan:#1d8fd0;
+    --pink:#d94a8f;
+    --green:#2fa463;
+    --red:#d9534f;
+    --orange:#e07a2b;
+    /* 品级配色（浅色版，降低饱和度，提升在白底上的对比） */
+    --r-rare:#2c7fd4;      /* 稀有 蓝 */
+    --r-epic:#7a52d4;      /* 史诗 紫 */
+    --r-legend:#e07a2b;    /* 传说 橙 */
+    --r-hero:#c89115;      /* 英雄 金黄 */
+    --r-myth:#d94a8f;      /* 神话 粉红 */
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:radial-gradient(1200px 800px at 80% -10%,rgba(122,82,212,.10),transparent 60%),radial-gradient(1000px 700px at -10% 10%,rgba(29,143,208,.08),transparent 60%),var(--bg);color:var(--text);font-family:-apple-system,"PingFang SC","Microsoft YaHei",Segoe UI,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{color:inherit}
+  .wrap{max-width:1360px;margin:0 auto;padding:28px 28px 80px}
+  /* 顶栏 */
+  .header{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:18px 22px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(135deg,rgba(212,147,33,.06),rgba(122,82,212,.06)),#ffffff;margin-bottom:24px;box-shadow:0 6px 20px rgba(15,23,42,.04)}
+  .brand{display:flex;align-items:center;gap:14px}
+  .logo{width:44px;height:44px;border-radius:12px;overflow:hidden;display:grid;place-items:center;box-shadow:0 10px 24px rgba(40,22,80,.28)}
+  .logo svg{display:block;width:100%;height:100%}
+  .title{font-size:22px;font-weight:800;letter-spacing:.5px;color:var(--text-strong)}
+  .subtitle{color:var(--muted);font-size:13px;margin-top:2px}
+  .nav{display:flex;gap:4px;flex-wrap:wrap;background:#f1f4fa;padding:4px;border-radius:12px;border:1px solid var(--line)}
+  .nav a{padding:8px 12px;border-radius:9px;font-size:13px;color:var(--muted);text-decoration:none;transition:.2s}
+  .nav a:hover{color:var(--text-strong);background:#ffffff;box-shadow:0 2px 6px rgba(15,23,42,.06)}
+  /* KPI */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:18px 0 30px}
+  .kpis-5{grid-template-columns:repeat(5,1fr)}
+  .kpi{padding:18px;border-radius:16px;border:1px solid var(--line);background:#ffffff;position:relative;overflow:hidden;box-shadow:0 4px 14px rgba(15,23,42,.04)}
+  .kpi::after{content:"";position:absolute;right:-20px;top:-20px;width:90px;height:90px;border-radius:50%;filter:blur(22px);opacity:.38}
+  .kpi.k1::after{background:var(--gold)}
+  .kpi.k2::after{background:var(--purple)}
+  .kpi.k3::after{background:var(--cyan)}
+  .kpi.k4::after{background:var(--pink)}
+  .kpi.k5::after{background:var(--green)}
+  .kpi .lbl{color:var(--muted);font-size:12px;letter-spacing:1px}
+  .kpi .val{font-size:22px;font-weight:900;margin-top:6px;color:var(--text-strong)}
+  .kpi .sub{color:var(--muted);font-size:12px;margin-top:4px}
+  /* 章节 */
+  section{scroll-margin-top:20px;margin:28px 0}
+  h2.section{font-size:22px;margin:0 0 4px;display:flex;align-items:center;gap:10px;color:var(--text-strong)}
+  h2.section .bar{width:6px;height:22px;border-radius:4px;background:linear-gradient(180deg,var(--gold),var(--pink))}
+  .section-desc{color:var(--muted);font-size:13px;margin-bottom:14px}
+  /* 通用卡片 */
+  .card{background:#ffffff;border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 4px 14px rgba(15,23,42,.04)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  .grid5{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+  /* 品级金字塔 */
+  .pyramid{display:flex;flex-direction:column;gap:14px;align-items:stretch;padding:8px 0}
+  .tier-group{display:flex;flex-direction:column;gap:8px;padding:14px 14px 16px;border-radius:16px;border:1px dashed var(--line-strong);position:relative;background:linear-gradient(180deg,#fafbff,#ffffff)}
+  .tier-group.non-ip{border-color:rgba(44,127,212,.35);background:linear-gradient(180deg,rgba(44,127,212,.05),#ffffff)}
+  .tier-group.ip{border-color:rgba(217,74,143,.35);background:linear-gradient(180deg,rgba(217,74,143,.06),#ffffff)}
+  .tier-group .grp-hd{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:-4px 4px 6px}
+  .tier-group .grp-ttl{display:flex;align-items:center;gap:10px;font-weight:800;color:var(--text-strong);font-size:14px}
+  .tier-group .grp-ttl .gdot{width:10px;height:10px;border-radius:3px}
+  .tier-group.non-ip .grp-ttl .gdot{background:linear-gradient(135deg,var(--r-rare),var(--r-legend))}
+  .tier-group.ip .grp-ttl .gdot{background:linear-gradient(135deg,var(--r-hero),var(--r-myth))}
+  .tier-group .grp-sub{color:var(--muted);font-size:12px}
+  .tier-group .grp-cnt{font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;background:#f1f4fa;color:var(--text-strong);border:1px solid var(--line)}
+  .tier{width:100%;max-width:none;border-radius:14px;padding:14px 18px;border:1px solid var(--line);position:relative;background:#ffffff;display:grid;grid-template-columns:140px 1fr 220px;gap:18px;align-items:center}
+  .tier .t-label{display:flex;flex-direction:column;gap:4px}
+  .tier .t-tag{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;background:#f1f4fa;border:1px solid var(--line);width:fit-content;color:var(--text-strong)}
+  .tier .dot{width:8px;height:8px;border-radius:50%}
+  .tier .t-name{font-size:18px;font-weight:800;color:var(--text-strong)}
+  .tier .t-meta{color:var(--muted);font-size:12px}
+  .tier .feats{display:flex;flex-wrap:wrap;gap:6px}
+  .tier .feat{font-size:12px;color:var(--text);background:#f4f6fb;border:1px solid var(--line);border-radius:999px;padding:4px 10px}
+  .tier .feat.new{background:linear-gradient(135deg,rgba(212,147,33,.14),rgba(217,74,143,.12));border-color:rgba(212,147,33,.45);color:#a36a0d;font-weight:600;display:inline-flex;align-items:center;gap:4px}
+  .tier .feat.new::before{content:"✦";font-size:10px;color:#c89115}
+  .tier .t-complex{display:flex;align-items:center;gap:8px;justify-content:flex-end}
+  .bar-track{width:160px;height:8px;background:#eef1f7;border-radius:999px;overflow:hidden}
+  .bar-fill{height:100%;border-radius:999px}
+  .tier[data-tier="rare"] .dot,.legend .dot.rare{background:var(--r-rare)}
+  .tier[data-tier="epic"] .dot,.legend .dot.epic{background:var(--r-epic)}
+  .tier[data-tier="legend"] .dot,.legend .dot.legend{background:var(--r-legend)}
+  .tier[data-tier="hero"] .dot,.legend .dot.hero{background:var(--r-hero)}
+  .tier[data-tier="myth"] .dot,.legend .dot.myth{background:var(--r-myth)}
+  .tier[data-tier="rare"]{box-shadow:inset 3px 0 0 var(--r-rare)}
+  .tier[data-tier="epic"]{box-shadow:inset 3px 0 0 var(--r-epic)}
+  .tier[data-tier="legend"]{box-shadow:inset 3px 0 0 var(--r-legend)}
+  .tier[data-tier="hero"]{box-shadow:inset 3px 0 0 var(--r-hero)}
+  .tier[data-tier="myth"]{box-shadow:inset 3px 0 0 var(--r-myth)}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin:4px 0 8px;align-items:center}
+  .legend .item{display:inline-flex;align-items:center;gap:6px}
+  .legend .dot{width:10px;height:10px;border-radius:50%}
+  .legend .legend-sep{color:var(--line-strong);font-weight:400}
+  .legend-new-tag{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:linear-gradient(135deg,rgba(212,147,33,.16),rgba(217,74,143,.14));border:1px solid rgba(212,147,33,.45);color:#a36a0d}
+  .legend-new-tag::before{content:"✦";font-size:10px}
+  /* 装扮矩阵 */
+  .matrix{overflow:auto;border:1px solid var(--line);border-radius:14px;background:#ffffff}
+  table.mx{border-collapse:separate;border-spacing:0;width:100%;min-width:900px}
+  table.mx th,table.mx td{padding:10px 12px;font-size:13px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top;color:var(--text)}
+  table.mx thead th{position:sticky;top:0;background:var(--panel2);color:var(--text-strong);font-weight:700;font-size:12px;letter-spacing:.5px;border-bottom:1px solid var(--line-strong)}
+  table.mx tbody tr:hover{background:#f7f9fd}
+  table.mx td.feature{font-weight:700;color:var(--text-strong);background:#fafbff}
+  table.mx td.dash{color:#b7bcca;opacity:.9;text-align:center}
+  .chip{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;margin-right:4px}
+  .chip.rare{background:rgba(44,127,212,.10);color:#1f5a9c;border:1px solid rgba(44,127,212,.35)}
+  .chip.epic{background:rgba(122,82,212,.10);color:#5a3aa6;border:1px solid rgba(122,82,212,.35)}
+  .chip.legend{background:rgba(224,122,43,.12);color:#9a5513;border:1px solid rgba(224,122,43,.4)}
+  .chip.hero{background:rgba(200,145,21,.14);color:#8a6308;border:1px solid rgba(200,145,21,.4)}
+  .chip.myth{background:rgba(217,74,143,.12);color:#a22c6a;border:1px solid rgba(217,74,143,.4)}
+  /* 渠道卡片 */
+  .channel{position:relative;padding:18px;border-radius:16px;border:1px solid var(--line);background:#ffffff;transition:.2s;display:flex;flex-direction:column;gap:10px;box-shadow:0 4px 14px rgba(15,23,42,.04)}
+  .channel:hover{transform:translateY(-2px);border-color:var(--line-strong);box-shadow:0 12px 28px rgba(15,23,42,.10)}
+  .channel .top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .channel .name{font-size:16px;font-weight:800;display:flex;align-items:center;gap:8px;color:var(--text-strong)}
+  .channel .badge{font-size:11px;padding:3px 8px;border-radius:999px;font-weight:700}
+  .b-active{background:rgba(47,164,99,.12);color:#1f7043;border:1px solid rgba(47,164,99,.4)}
+  .b-pay{background:rgba(212,147,33,.14);color:#8a6308;border:1px solid rgba(212,147,33,.4)}
+  .b-super{background:rgba(217,74,143,.12);color:#a22c6a;border:1px solid rgba(217,74,143,.4)}
+  .b-newbie{background:rgba(29,143,208,.12);color:#155f89;border:1px solid rgba(29,143,208,.4)}
+  .b-sub{background:rgba(122,82,212,.12);color:#4c2f90;border:1px solid rgba(122,82,212,.4)}
+  .b-disc{background:rgba(224,122,43,.12);color:#8a4713;border:1px solid rgba(224,122,43,.45)}
+  .channel .price{font-size:20px;font-weight:900;color:var(--gold2);letter-spacing:.5px}
+  .channel .price small{color:var(--muted);font-size:11px;font-weight:500;margin-left:4px}
+  .channel .desc{font-size:12px;color:var(--muted);min-height:34px}
+  .channel .rewards{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto}
+  .channel .reward{font-size:11px;padding:3px 8px;border-radius:8px;background:#f4f6fb;border:1px solid var(--line);color:var(--text)}
+  .channel .role{font-size:11px;color:var(--muted);font-style:italic}
+  /* 召唤系统 */
+  .summon-wrap{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .summon{padding:18px;border-radius:16px;border:1px solid var(--line);background:#ffffff;position:relative;overflow:hidden;box-shadow:0 4px 14px rgba(15,23,42,.04)}
+  .summon h4{margin:0 0 4px;font-size:17px;display:flex;align-items:center;gap:8px;color:var(--text-strong)}
+  .summon .sub{color:var(--muted);font-size:12px;margin-bottom:12px}
+  .summon ul{padding-left:18px;margin:0;font-size:13px;color:var(--text)}
+  .summon ul li{margin:4px 0}
+  .summon .price-row{display:flex;align-items:baseline;gap:8px;margin-top:10px;padding:10px;background:#fafbff;border:1px dashed var(--line-strong);border-radius:10px}
+  .summon .price-row .big{font-size:20px;font-weight:900;color:var(--gold2)}
+  .summon.s1::before,.summon.s2::before,.summon.s3::before{content:"";position:absolute;inset:0 auto auto 0;width:4px;height:100%}
+  .summon.s1::before{background:linear-gradient(180deg,#d94a8f,#7a52d4)}
+  .summon.s2::before{background:linear-gradient(180deg,#d49321,#d94a8f)}
+  .summon.s3::before{background:linear-gradient(180deg,#1d8fd0,#7a52d4)}
+  /* 分层 */
+  .rlayers{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;align-items:stretch}
+  .rlayer{padding:14px;border-radius:14px;border:1px solid var(--line);background:#ffffff;display:flex;flex-direction:column;gap:10px;box-shadow:0 4px 14px rgba(15,23,42,.04)}
+  .rlayer .tag{font-size:11px;padding:3px 9px;border-radius:999px;width:fit-content;font-weight:700;letter-spacing:.5px}
+  .rlayer.l1 .tag{background:rgba(29,143,208,.12);color:#155f89}
+  .rlayer.l2 .tag{background:rgba(47,164,99,.12);color:#1f7043}
+  .rlayer.l3 .tag{background:rgba(212,147,33,.14);color:#8a6308}
+  .rlayer.l4 .tag{background:rgba(217,74,143,.12);color:#a22c6a}
+  .rlayer .rl-sec{padding:10px;border-radius:10px;background:#f7f9fd;border:1px solid var(--line);display:flex;flex-direction:column;gap:6px}
+  .rlayer .rl-sec.goal{background:linear-gradient(135deg,rgba(212,147,33,.08),rgba(217,74,143,.06));border-color:rgba(212,147,33,.3);margin-top:auto}
+  .rlayer .rl-sec-t{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.5px;display:flex;align-items:center;gap:6px}
+  .rlayer .rl-sec.goal .rl-sec-t{color:#a36a0d}
+  .rlayer .rl-sec-t::before{content:"▸";color:var(--muted)}
+  .rlayer .rl-sec.goal .rl-sec-t::before{content:"🎯";font-size:10px}
+  .rlayer .list{font-size:12.5px;color:var(--text);display:flex;flex-direction:column;gap:4px}
+  .rlayer .list b{color:var(--text-strong);font-weight:700}
+  .rlayer .rl-sec.goal .list{color:var(--text-strong)}
+  /* 机会点 */
+  .opp{padding:16px;border-radius:14px;border:1px dashed rgba(212,147,33,.45);background:linear-gradient(135deg,rgba(212,147,33,.06),rgba(122,82,212,.05)),#ffffff}
+  .opp h4{margin:0 0 6px;color:var(--gold2);font-size:15px}
+  .opp p{margin:4px 0;color:var(--text);font-size:13px}
+  .opp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  /* 机会方案（3 步流程） */
+  .opp-plan{padding:18px;border-radius:16px;border:1px dashed rgba(212,147,33,.45);background:linear-gradient(135deg,rgba(212,147,33,.05),rgba(122,82,212,.05)),#ffffff}
+  .opp-hd{margin-bottom:14px}
+  .opp-hd-t{font-weight:800;font-size:16px;color:var(--text-strong)}
+  .opp-hd-s{color:var(--muted);font-size:13px;margin-top:4px}
+  .opp-grid-3{display:grid;grid-template-columns:1fr 32px 1fr 32px 1fr;gap:10px;align-items:stretch}
+  .opp-arrow{display:grid;place-items:center;font-size:22px;color:var(--gold2);font-weight:900}
+  .opp-card{padding:14px 16px;border-radius:14px;border:1px solid var(--line);background:#ffffff;display:flex;flex-direction:column;gap:8px;box-shadow:0 4px 14px rgba(15,23,42,.04);position:relative;overflow:hidden}
+  .opp-card::after{content:"";position:absolute;top:0;left:0;width:100%;height:3px}
+  .opp-card.step-1::after{background:linear-gradient(90deg,#1d8fd0,#7a52d4)}
+  .opp-card.step-2::after{background:linear-gradient(90deg,#7a52d4,#d49321)}
+  .opp-card.step-3::after{background:linear-gradient(90deg,#d49321,#d94a8f)}
+  .opp-step{font-size:11px;font-weight:800;letter-spacing:1.5px;color:var(--gold2);background:rgba(212,147,33,.1);padding:2px 10px;border-radius:999px;width:fit-content}
+  .opp-card.step-1 .opp-step{color:#155f89;background:rgba(29,143,208,.12)}
+  .opp-card.step-2 .opp-step{color:#4c2f90;background:rgba(122,82,212,.12)}
+  .opp-card.step-3 .opp-step{color:#a22c6a;background:rgba(217,74,143,.12)}
+  .opp-t{font-size:15px;font-weight:800;color:var(--text-strong)}
+  .opp-b{font-size:13px;color:var(--text);line-height:1.6}
+  @media (max-width:900px){
+    .opp-grid-3{grid-template-columns:1fr;gap:8px}
+    .opp-arrow{transform:rotate(90deg);padding:4px 0}
+  }
+  /* 羁绊阶梯 */
+  .lad{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .step{padding:14px;border-radius:14px;border:1px solid var(--line);background:#ffffff;position:relative;display:flex;flex-direction:column;gap:6px;box-shadow:0 4px 14px rgba(15,23,42,.04)}
+  .step .no{font-size:22px;font-weight:900;color:var(--gold2)}
+  .step .t{font-weight:700;color:var(--text-strong)}
+  .step .d{color:var(--muted);font-size:12px}
+  .step .cost{font-size:12px;margin-top:4px;color:#a22c6a;font-weight:700}
+  /* 局外装扮 */
+  .outfit-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .outfit-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:#fafbff}
+  .outfit-item .oi-ico{width:36px;height:36px;border-radius:10px;background:#ffffff;border:1px solid var(--line);display:grid;place-items:center;font-size:18px;flex-shrink:0}
+  .outfit-item .oi-t{font-weight:700;color:var(--text-strong);font-size:14px}
+  .outfit-item .oi-d{color:var(--muted);font-size:12px;margin-top:2px}
+  @media (max-width:900px){.outfit-row{grid-template-columns:repeat(2,1fr)}}
+  @media (max-width:520px){.outfit-row{grid-template-columns:1fr}}
+  /* 脚注 */
+  footer{margin-top:40px;color:var(--muted);font-size:12px;text-align:center;padding-top:20px;border-top:1px solid var(--line)}
+  .soft{color:var(--muted)}
+  .hl{color:var(--gold2);font-weight:700}
+  /* 响应式 */
+  @media (max-width:1100px){
+    .kpis,.kpis-5,.grid4,.summon-wrap,.rlayers,.opp-grid{grid-template-columns:repeat(2,1fr)}
+    .grid3{grid-template-columns:1fr}
+    .tier{grid-template-columns:110px 1fr;gap:12px}
+    .tier .t-complex{grid-column:1/-1;justify-content:flex-start}
+  }
+  @media (max-width:720px){
+    .kpis,.kpis-5,.grid4,.summon-wrap,.rlayers,.opp-grid,.grid2,.lad{grid-template-columns:1fr}
+    .nav{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="brand">
+      <div class="logo" aria-label="金铲铲之战">
+        <svg viewBox="0 0 48 48" width="44" height="44" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="lgBg" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#3b1d6b"/>
+              <stop offset="100%" stop-color="#0f2d63"/>
+            </linearGradient>
+            <linearGradient id="lgShovel" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#ffe28a"/>
+              <stop offset="55%" stop-color="#f2b23c"/>
+              <stop offset="100%" stop-color="#a36a0d"/>
+            </linearGradient>
+            <radialGradient id="lgGlow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#ffd98a" stop-opacity="0.8"/>
+              <stop offset="100%" stop-color="#ffd98a" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+          <rect width="48" height="48" rx="12" fill="url(#lgBg)"/>
+          <circle cx="24" cy="24" r="18" fill="url(#lgGlow)"/>
+          <!-- 铲子 -->
+          <g transform="translate(24 24) rotate(-30) translate(-24 -24)">
+            <rect x="22.6" y="7" width="2.8" height="22" rx="1.4" fill="url(#lgShovel)" stroke="#6a3e08" stroke-width="0.5"/>
+            <path d="M14 28 Q24 20 34 28 Q32 39 24 41 Q16 39 14 28 Z" fill="url(#lgShovel)" stroke="#6a3e08" stroke-width="0.6"/>
+            <path d="M14 28 Q24 20 34 28" fill="none" stroke="#fff3c4" stroke-width="0.9" stroke-linecap="round" opacity="0.85"/>
+          </g>
+          <!-- 星光 -->
+          <g fill="#fff3c4">
+            <circle cx="38" cy="11" r="1.2"/>
+            <circle cx="11" cy="13" r="0.9"/>
+            <circle cx="10" cy="36" r="1.1"/>
+            <circle cx="39" cy="38" r="0.9"/>
+          </g>
+        </svg>
+      </div>
+      <div>
+        <div class="title">金铲铲之战 · 商业化结构分析</div>
+      </div>
+    </div>
+    <div class="nav">
+      <a href="#overview">概览</a>
+      <a href="#content">商业化内容</a>
+      <a href="#channels">投放渠道</a>
+      <a href="#summon">召唤系统</a>
+      <a href="#bond">羁绊体系</a>
+      <a href="#layers">玩家分层</a>
+      <a href="#summary">总结 & 机会点</a>
+    </div>
+  </div>
+
+  <!-- KPI 概览 -->
+  <section id="overview">
+    <div class="kpis kpis-5">
+      <div class="kpi k1">
+        <div class="lbl">商业化内容</div>
+        <div class="val">小小英雄为主</div>
+        <div class="sub">以小小英雄为主，竞技场为辅，其他装扮为补充</div>
+      </div>
+      <div class="kpi k2">
+        <div class="lbl">商业化投放</div>
+        <div class="val">12 个投放方式</div>
+        <div class="sub">覆盖各定价层级</div>
+      </div>
+      <div class="kpi k3">
+        <div class="lbl">召唤系统</div>
+        <div class="val">大 R · 超 R 抽奖</div>
+        <div class="sub">面向大 R 和超 R 设计的抽奖系统</div>
+      </div>
+      <div class="kpi k4">
+        <div class="lbl">羁绊系统</div>
+        <div class="val">收集进阶阶梯</div>
+        <div class="sub">面向超 R 设计的收集进阶阶梯</div>
+      </div>
+      <div class="kpi k5">
+        <div class="lbl">玩家分层</div>
+        <div class="val">分层付费点</div>
+        <div class="sub">不同玩家的付费点设置</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 1. 商业化内容 -->
+  <section id="content">
+    <h2 class="section"><span class="bar"></span>① 商业化内容</h2>
+    <div class="section-desc">核心资产是<span class="hl">小小英雄</span>，次核心资产是<span class="hl">竞技场</span>；其余内容以「装扮」围绕小小英雄构建系列化消费场景。</div>
+
+    <!-- 1.1 小小英雄金字塔 -->
+    <div class="card" style="margin-bottom:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:16px;flex-wrap:wrap">
+        <div style="font-weight:800;font-size:15px">小小英雄 · 品级金字塔</div>
+        <div class="legend">
+          <span class="item"><span class="dot rare"></span>稀有</span>
+          <span class="item"><span class="dot epic"></span>史诗</span>
+          <span class="item"><span class="dot legend"></span>传说</span>
+          <span class="item"><span class="dot hero"></span>英雄</span>
+          <span class="item"><span class="dot myth"></span>神话</span>
+          <span class="item legend-sep">|</span>
+          <span class="item"><span class="legend-new-tag">此阶新增</span></span>
+        </div>
+      </div>
+      <div class="pyramid">
+
+        <!-- 非 IP 组 -->
+        <div class="tier-group non-ip">
+          <div class="grp-hd">
+            <div class="grp-ttl"><span class="gdot"></span>非 IP · 动物原型系列</div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="grp-sub">全部以动物为主 · 不设计拟人化英雄</span>
+              <span class="grp-cnt">3 档</span>
+            </div>
+          </div>
+
+          <div class="tier" data-tier="rare">
+            <div class="t-label">
+              <span class="t-tag"><span class="dot"></span>稀有</span>
+              <span class="t-name">基础款</span>
+              <span class="t-meta">动物原型 · 多数无升星</span>
+            </div>
+            <div class="feats">
+              <span class="feat">设计相对简单</span>
+              <span class="feat">形象展示无动效 · 仅基本动作</span>
+              <span class="feat">大部分无升星</span>
+              <span class="feat">有基础局内动作</span>
+            </div>
+            <div class="t-complex">
+              <span class="soft" style="font-size:11px">复杂度</span>
+              <div class="bar-track"><div class="bar-fill" style="width:20%;background:var(--r-rare)"></div></div>
+            </div>
+          </div>
+
+          <div class="tier" data-tier="epic">
+            <div class="t-label">
+              <span class="t-tag"><span class="dot"></span>史诗</span>
+              <span class="t-name">基础 plus（炫彩）/ 定位款</span>
+              <span class="t-meta">稀有炫彩 + 瑞羽·静尾（用于定位）</span>
+            </div>
+            <div class="feats">
+              <span class="feat">炫彩版可升星 · 定位款无升星</span>
+              <span class="feat">升星后增加部件 · 更复杂</span>
+              <span class="feat">有基础局内动作</span>
+              <span class="feat new">形象展示：最基础出现动画</span>
+            </div>
+            <div class="t-complex">
+              <span class="soft" style="font-size:11px">复杂度</span>
+              <div class="bar-track"><div class="bar-fill" style="width:35%;background:var(--r-epic)"></div></div>
+            </div>
+          </div>
+
+          <div class="tier" data-tier="legend">
+            <div class="t-label">
+              <span class="t-tag"><span class="dot"></span>传说</span>
+              <span class="t-name">复杂款</span>
+              <span class="t-meta">动物向最高阶</span>
+            </div>
+            <div class="feats">
+              <span class="feat">设计最为复杂的非 IP 款</span>
+              <span class="feat">部分额外表现特效</span>
+              <span class="feat">部分升星 · 不升星者初始≈三星</span>
+              <span class="feat new">形象展示：较复杂出现动画</span>
+            </div>
+            <div class="t-complex">
+              <span class="soft" style="font-size:11px">复杂度</span>
+              <div class="bar-track"><div class="bar-fill" style="width:55%;background:var(--r-legend)"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- IP 组 -->
+        <div class="tier-group ip">
+          <div class="grp-hd">
+            <div class="grp-ttl"><span class="gdot"></span>IP 英雄 / 英雄皮肤系列</div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="grp-sub">IP 原皮与皮肤衍生 · 含原创系列皮肤</span>
+              <span class="grp-cnt">2 档</span>
+            </div>
+          </div>
+
+          <div class="tier" data-tier="hero">
+            <div class="t-label">
+              <span class="t-tag"><span class="dot"></span>英雄</span>
+              <span class="t-name">原皮款</span>
+              <span class="t-meta">以 IP 英雄为基础设计（双城除外）</span>
+            </div>
+            <div class="feats">
+              <span class="feat">形象展示：特殊演绎动作</span>
+              <span class="feat">有局内动作</span>
+              <span class="feat new">搭配局内攻击特效</span>
+            </div>
+            <div class="t-complex">
+              <span class="soft" style="font-size:11px">复杂度</span>
+              <div class="bar-track"><div class="bar-fill" style="width:75%;background:var(--r-hero)"></div></div>
+            </div>
+          </div>
+
+          <div class="tier" data-tier="myth">
+            <div class="t-label">
+              <span class="t-tag"><span class="dot"></span>神话</span>
+              <span class="t-name">IP 皮肤 / 原创皮肤</span>
+              <span class="t-meta">以 IP 英雄皮肤或原创英雄皮肤为基础设计</span>
+            </div>
+            <div class="feats">
+              <span class="feat">形象展示出场动画</span>
+              <span class="feat">局内动作</span>
+              <span class="feat">专属攻击特效</span>
+              <span class="feat new">专属淘汰特效</span>
+              <span class="feat" style="width:100%;background:linear-gradient(135deg,rgba(217,74,143,.10),rgba(212,147,33,.08));border-color:rgba(217,74,143,.35);color:#a22c6a"><b style="margin-right:4px">至臻神话：</b>在此基础上，增加更多的特效表现</span>
+            </div>
+            <div class="t-complex">
+              <span class="soft" style="font-size:11px">复杂度</span>
+              <div class="bar-track"><div class="bar-fill" style="width:100%;background:linear-gradient(90deg,var(--r-myth),#d49321)"></div></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 1.2 局内装扮矩阵 -->
+    <div class="card" style="margin-bottom:16px">
+      <div style="font-weight:800;font-size:15px;margin-bottom:6px">局内装扮 · 品级特性矩阵</div>
+      <div class="section-desc">每类装扮按稀有→神话递进；<span class="hl">橙色单元</span>表示该等级新增能力。</div>
+      <div class="matrix">
+        <table class="mx">
+          <thead>
+            <tr>
+              <th style="width:120px">装扮类别</th>
+              <th><span class="chip rare">稀有</span></th>
+              <th><span class="chip epic">史诗</span></th>
+              <th><span class="chip legend">传说</span></th>
+              <th><span class="chip hero">英雄</span></th>
+              <th><span class="chip myth">神话</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="feature">竞技场棋盘</td>
+              <td>主体棋盘皮肤单独设计</td>
+              <td class="dash">—</td>
+              <td>与小小英雄成系列<br><b>+ 利息球定制 · 入场动画 · 简单的胜/负/登顶动画</b></td>
+              <td>设计特别复杂<br><b>+ 连胜专属动画</b></td>
+              <td>顶级设计<br><b>+ 老八动画 · 部分支持自定义</b>（如魔龙之巢/幻境）</td>
+            </tr>
+            <tr>
+              <td class="feature">攻击特效</td>
+              <td>普通攻击特效</td>
+              <td>可升星，升星后更复杂</td>
+              <td class="dash">—</td>
+              <td><b>+ 特效结束后在敌方位置播放演出动画</b></td>
+              <td>敌方位置演出面积更大 · 特效更复杂</td>
+            </tr>
+            <tr>
+              <td class="feature">淘汰特效</td>
+              <td colspan="4" class="soft" style="padding-left:14px">大部分跟随小小英雄一起推出，随等级递增</td>
+              <td><b>专门神话级</b> · 系列皮肤「终极目标」</td>
+            </tr>
+            <tr>
+              <td class="feature">传送门特效</td>
+              <td>默认传送门</td>
+              <td>换色 + 部分特效</td>
+              <td>专门设计 · 特效更丰富</td>
+              <td>设计更复杂 · 面积更大</td>
+              <td>全屏特效传送门</td>
+            </tr>
+            <tr>
+              <td class="feature">棋子传送特效</td>
+              <td class="dash">—</td>
+              <td>默认效果</td>
+              <td>换色 + 棋子身上简单特效</td>
+              <td>棋子特效复杂 · 驻留时间长 · 收棋子光效复杂</td>
+              <td>偏实体特效 · 收棋子光效最复杂</td>
+            </tr>
+            <tr>
+              <td class="feature">庆祝特效</td>
+              <td>无特效</td>
+              <td class="dash">—</td>
+              <td>棋子脚下/头顶部分特效</td>
+              <td class="dash">—</td>
+              <td class="dash">—</td>
+            </tr>
+            <tr>
+              <td class="feature">表情</td>
+              <td colspan="5" class="soft" style="padding-left:14px">区别不大，仅按稀有度划分等级（稀有 / 史诗）</td>
+            </tr>
+            <tr>
+              <td class="feature">其他定制</td>
+              <td colspan="5">
+                <span class="feat" style="margin-right:6px">局内按钮</span>
+                <span class="feat" style="margin-right:6px">聊天气泡</span>
+                <span class="feat" style="margin-right:6px">局内涂鸦</span>
+                <span class="feat">选秀特效（脚下特效 + 选完连接特效）</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 1.3 局外装扮 -->
+    <div class="card">
+      <div style="font-weight:800;font-size:15px;margin-bottom:10px">局外装扮</div>
+      <div class="outfit-row">
+        <div class="outfit-item">
+          <div class="oi-ico">🏠</div>
+          <div class="oi-body">
+            <div class="oi-t">大厅角色</div>
+            <div class="oi-d">跟随使用的小小英雄</div>
+          </div>
+        </div>
+        <div class="outfit-item">
+          <div class="oi-ico">👤</div>
+          <div class="oi-body">
+            <div class="oi-t">头像</div>
+            <div class="oi-d">普通头像 / <span class="hl">动态头像</span></div>
+          </div>
+        </div>
+        <div class="outfit-item">
+          <div class="oi-ico">🖼️</div>
+          <div class="oi-body">
+            <div class="oi-t">头像框</div>
+            <div class="oi-d">普通 / <span class="hl">动态头像框</span></div>
+          </div>
+        </div>
+        <div class="outfit-item">
+          <div class="oi-ico">🪪</div>
+          <div class="oi-body">
+            <div class="oi-t">名片框</div>
+            <div class="oi-d">静态 / <span class="hl">动态名片框</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. 投放渠道 -->
+  <section id="channels">
+    <h2 class="section"><span class="bar"></span>② 商业化投放</h2>
+    <div class="section-desc">12 条投放渠道，按「破冰 · 直售/活动 · 订阅 · 折扣 · 抽奖 · 超 R」六类色标识：
+      <span class="badge b-newbie" style="font-size:11px;padding:2px 8px;border-radius:999px">破冰</span>
+      <span class="badge b-pay" style="font-size:11px;padding:2px 8px;border-radius:999px">直售/活动</span>
+      <span class="badge b-sub" style="font-size:11px;padding:2px 8px;border-radius:999px">订阅/权益</span>
+      <span class="badge b-disc" style="font-size:11px;padding:2px 8px;border-radius:999px">折扣</span>
+      <span class="badge b-active" style="font-size:11px;padding:2px 8px;border-radius:999px">抽奖</span>
+      <span class="badge b-super" style="font-size:11px;padding:2px 8px;border-radius:999px">超 R 表现</span>
+    </div>
+
+    <div class="grid4">
+
+      <div class="channel">
+        <div class="top"><div class="name">🧊 首充礼包（普通）</div><span class="badge b-newbie">破冰</span></div>
+        <div class="price">¥1 <small>充值破冰</small></div>
+        <div class="desc">以极低门槛完成第一次付费动作</div>
+        <div class="rewards">
+          <span class="reward">各类抽奖货币</span>
+        </div>
+        <div class="role">核心定位：零门槛破冰</div>
+      </div>
+
+      <div class="channel">
+        <div class="top"><div class="name">🌟 赛季首充（星神秘宝）</div><span class="badge b-newbie">破冰</span></div>
+        <div class="price">¥6 <small>60 点券·等额返</small></div>
+        <div class="desc">赛季初的通用破冰活动</div>
+        <div class="rewards">
+          <span class="reward">等额点券</span>
+          <span class="reward">赛季头像</span>
+          <span class="reward">赛季头像框</span>
+        </div>
+        <div class="role">核心定位：赛季周期内复充破冰</div>
+      </div>
+
+      <div class="channel">
+        <div class="top"><div class="name">🎟 铲卡（类电商会员卡）</div><span class="badge b-disc">折扣</span></div>
+        <div class="price">¥18 <small>1800 点券</small></div>
+        <div class="desc">开通后参加付费活动更划算，营造「这样买最划算」的心智</div>
+        <div class="rewards">
+          <span class="reward">付费活动折扣</span>
+          <span class="reward">捆绑促销</span>
+        </div>
+        <div class="role">核心定位：买了不亏 · 刺激持续消费</div>
+      </div>
+
+      <div class="channel">
+        <div class="top"><div class="name">🛰 赛博补给站（类无尽礼包）</div><span class="badge b-pay">直售/活动</span></div>
+        <div class="price">¥18 <small>常规礼包</small></div>
+        <div class="desc">无尽礼包型玩法，性价比型消费入口</div>
+        <div class="rewards">
+          <span class="reward">等价点券</span>
+          <span class="reward">免费赛博召唤代币</span>
+        </div>
+        <div class="role">核心定位：常规性价比补给</div>
+      </div>
+
+      <div class="channel">
+        <div class="top"><div class="name">📅 普通月卡</div><span class="badge b-sub">订阅/权益</span></div>
+        <div class="price">¥25 <small>月付</small></div>
+        <div class="desc">点券 + 徽章礼盒，徽章是核心吸引</div>
+        <div class="rewards">
+          <span class="reward">等价点券</span>
+          <span class="reward">徽章礼盒 ★</span>
+        </div>
+        <div class="role">核心定位：中 R 月度订阅</div>
+      </div>
+
+      <div class="channel">
+        <div class="top"><div class="name">💎 高级月卡</div><span class="badge b-sub">订阅/权益</span></div>
+        <div class="price">¥128 <small>月付</small></div>
+        <div class="desc">扩阵容位是核心吸引；叠加直购折扣</div>
+        <div class="rewards">
+          <span class="reward">等价点券</span>
+          <span class="reward">阵容位扩容 ★</span>
+          <span class="reward">商城折扣</span>
+        </div>
+        <div class="role">核心定位：功能向月卡 · 重度玩家</div>
+      </div>
+
+      <div class="channel">
+        <div class="top"><div class="name">📚 符文精粹系统</div><span class="badge b-active">活跃×付费</span></div>
+        <div class="price">¥36 <small>3600 点券直购</small></div>
+        <div class="desc">持续活跃积累，<b>约一个月换一只英雄级小小英雄</b>；赛季结束失效；当前赛季不可跨季积累；也可以直接购买精粹兑换</div>
+        <div class="rewards">
+          <span class="reward">英雄级小小英雄（20000 精粹）</span>
+        </div>
+        <div class="role">核心定位：活跃 × 付费转化</div>
+      </div>
+
+      <div class="channel">
+        <div class="top"><div class="name">🏪 商城直售</div><span class="badge b-pay">直售/活动</span></div>
+        <div class="price">¥79 ~ ¥99 <small>7900–9900 点券</small></div>
+        <div class="desc">作为当期商品的统一入口，方便玩家跳转；英雄级小小英雄 / 传说级竞技场轮换</div>
+        <div class="rewards">
+          <span class="reward">英雄级小小英雄</span>
+          <span class="reward">传说级竞技场</span>
+        </div>
+        <div class="role">核心定位：构建游戏定价心智</div>
+      </div>
+
+      <div class="channel">
+        <div class="top"><div class="name">🎁 主题礼包直售</div><span class="badge b-pay">直售/活动</span></div>
+        <div class="price">¥69 <small>6900 点券</small></div>
+        <div class="desc">套装打包：赛季棋盘 + 头像框 + 表情等，定价低于常驻棋盘</div>
+        <div class="rewards">
+          <span class="reward">赛季棋盘 ★</span>
+          <span class="reward">头像框</span>
+          <span class="reward">表情</span>
+        </div>
+        <div class="role">核心定位：「早买早划算」的赛季套装</div>
+      </div>
+
+      <div class="channel">
+        <div class="top"><div class="name">📖 BP 战令（多条并行）</div><span class="badge b-pay">直售/活动</span></div>
+        <div class="price">¥29 / ¥49 / ¥79</div>
+        <div class="desc">最多并行 3 条：赛季 BP / 活动 BP / 主题 BP，核心奖励结构一致</div>
+        <div class="rewards">
+          <span class="reward">英雄级小小英雄</span>
+          <span class="reward">棋盘</span>
+          <span class="reward">攻击特效（赛季）</span>
+        </div>
+        <div class="role">核心定位：稳定的赛季 / 活动付费</div>
+      </div>
+
+      <div class="channel">
+        <div class="top"><div class="name">📘 时空魔典</div><span class="badge b-active">活跃×付费</span></div>
+        <div class="price">活跃累积，付费加速</div>
+        <div class="desc">持续活跃获徽章盒，集满难度偏高（五费收集难），兼做过期精粹 / 蓝宝石出口</div>
+        <div class="rewards">
+          <span class="reward">赛季皮肤（神话级）★</span>
+        </div>
+        <div class="role">核心定位：赛季神话皮肤获取 · 活跃粘性</div>
+      </div>
+
+      <div class="channel">
+        <div class="top"><div class="name">🎲 召唤系统</div><span class="badge b-super">超 R 核心</span></div>
+        <div class="price">¥600 ~ ¥1800+ <small>单件综合</small></div>
+        <div class="desc">面向大 R 的核心抽奖系统 · 见下方《召唤系统》深度拆解</div>
+        <div class="rewards">
+          <span class="reward">神话 / 至臻神话小小英雄</span>
+          <span class="reward">神话棋盘</span>
+          <span class="reward">击败特效</span>
+        </div>
+        <div class="role">核心定位：最关键的付费出口</div>
+      </div>
+
+      <div class="channel">
+        <div class="top"><div class="name">👑 VIP 系统</div><span class="badge b-super">超 R 身份</span></div>
+        <div class="price">¥20,000 → ¥38,000 <small>消耗门槛</small></div>
+        <div class="desc">整体充值反馈系统：查看消耗、关键资源共享、身份象征</div>
+        <div class="rewards">
+          <span class="reward">基础：局外装扮</span>
+          <span class="reward">次高：资源共享给队友</span>
+          <span class="reward">最高：小小塔姆</span>
+        </div>
+        <div class="role">核心定位：超 R 社交分享 & 身份表现</div>
+      </div>
+
+      <div class="channel" style="grid-column: span 2">
+        <div class="top"><div class="name">🔗 羁绊系统（英雄羁绊 / 主题羁绊）</div><span class="badge b-super">超 R 收集</span></div>
+        <div class="price">¥5,000 ~ ¥13,000 <small>终极奖励综合成本</small></div>
+        <div class="desc">收集进度解锁向的图鉴型系统；对全收集玩家赋予强社交炫耀表现</div>
+        <div class="rewards">
+          <span class="reward">动态头像</span>
+          <span class="reward">传说 / 英雄级传送门</span>
+          <span class="reward">动态头像框</span>
+          <span class="reward">神话级传送门（不单售）</span>
+          <span class="reward">终极淘汰动画（不单售）</span>
+        </div>
+        <div class="role">核心定位：大 R / 超 R 的"全图鉴收集"出口</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 3. 召唤系统 -->
+  <section id="summon">
+    <h2 class="section"><span class="bar"></span>③ 召唤系统 · 大 R 的核心战场</h2>
+    <div class="section-desc">三套并行的召唤系统，品类差异化但<span class="hl">单件定价基本一致</span>。每类抽奖活动都经过精巧设计，但因为服务于大 R，玩家会以价格 × 品质做横向判断。</div>
+
+    <div class="summon-wrap">
+      <div class="summon s1">
+        <h4>🌈 棱彩召唤</h4>
+        <div class="sub">服务于 <b>神话级 / 至臻神话</b> 小小英雄</div>
+        <ul>
+          <li><b>抽奖破冰：</b>首抽折扣吸引开启</li>
+          <li><b>持续激励：</b>发放折扣券 + 抽奖后概率再掉折扣券（让价格逐步上涨，但始终"有折扣感"）</li>
+          <li><b>特殊奖池：</b>十连后临时提升概率，进入高概率卡池</li>
+          <li><b>十连代金券</b>等叠加设计</li>
+          <li><b>硬保底：</b>538 / 1688 棱彩石，约 100 / 300 抽</li>
+          <li>同期常有多个系列池子，<b>棱彩石通用</b>（可以跨池子攒到保底）</li>
+        </ul>
+        <div class="price-row">
+          <span class="big">¥600</span><span class="soft">普通神话 · 约 100 抽综合</span>
+        </div>
+        <div class="price-row">
+          <span class="big">¥1,800</span><span class="soft">至臻神话 · 约 300 抽综合</span>
+        </div>
+      </div>
+
+      <div class="summon s2">
+        <h4>🗺 寻宝召唤</h4>
+        <div class="sub">服务于 <b>英雄级棋盘</b></div>
+        <ul>
+          <li><b>不放回抽奖 · 逐次提价</b></li>
+          <li>首抽折扣破冰</li>
+          <li>抽一次后第二次五折（"pdd 感"，但并非每次最优）</li>
+          <li>抽满上限约 3.5 万点券</li>
+        </ul>
+        <div class="price-row">
+          <span class="big">≈ ¥350</span><span class="soft">抽满综合</span>
+        </div>
+      </div>
+
+      <div class="summon s3">
+        <h4>💠 宝库召唤</h4>
+        <div class="sub">类王者荣耀水晶系统 · 紫宝石兑换</div>
+        <ul>
+          <li>抽奖累积紫色宝石，用紫宝石兑换核心奖励</li>
+          <li>轮换 <b>至臻神话</b>、<b>神话</b>、<b>神话棋盘</b>、<b>神话击败特效</b></li>
+        </ul>
+        <div class="price-row">
+          <span class="big">¥600 / ¥1,200 / ¥1,600</span><span class="soft">按品类差异</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. 羁绊系统 -->
+  <section id="bond">
+    <h2 class="section"><span class="bar"></span>④ 羁绊系统 · 收集向进阶阶梯</h2>
+    <div class="section-desc">主题羁绊的四级阶梯：基础 → 进阶 → 高级 → 终极。越往上奖励越独家、不单售，越指向「炫耀向 / 身份向」。</div>
+    <div class="lad">
+      <div class="step" style="border-color:rgba(44,127,212,.35)">
+        <span class="no">01</span>
+        <div class="t">基础收集</div>
+        <div class="d">传说级 / 英雄级 <b>传送门特效</b> 为主</div>
+        <div class="cost" style="color:#1f5a9c">门槛：较低</div>
+      </div>
+      <div class="step" style="border-color:rgba(122,82,212,.35)">
+        <span class="no">02</span>
+        <div class="t">进阶收集</div>
+        <div class="d"><b>动态头像框</b> 为主</div>
+        <div class="cost" style="color:#5a3aa6">门槛：中</div>
+      </div>
+      <div class="step" style="border-color:rgba(224,122,43,.4)">
+        <span class="no">03</span>
+        <div class="t">高级收集</div>
+        <div class="d"><b>神话级传送门</b>（不单售）</div>
+        <div class="cost" style="color:#8a4713">综合成本 ≈ ¥5,000</div>
+      </div>
+      <div class="step" style="border-color:rgba(217,74,143,.45)">
+        <span class="no">04</span>
+        <div class="t">终极收集</div>
+        <div class="d"><b>终极淘汰动画</b>（KDA / 灵魂莲华 / 香水宝石 等）</div>
+        <div class="cost">综合成本 ≈ ¥13,000</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. 玩家分层 -->
+  <section id="layers">
+    <h2 class="section"><span class="bar"></span>⑤ 玩家分层</h2>
+    <div class="section-desc">付费能力不同的玩家，主要参与的商业化活动及核心追求。</div>
+    <div class="rlayers">
+
+      <div class="rlayer l1">
+        <span class="tag">非 R 及小 R · 低付费</span>
+        <div class="rl-sec">
+          <div class="rl-sec-t">核心参与的商业化活动</div>
+          <div class="list">
+            <div>符文精粹系统（活跃 × 低付费）</div>
+            <div>首充破冰（¥1 / ¥6）</div>
+            <div>BP（¥29 / ¥49 / ¥79）</div>
+          </div>
+        </div>
+        <div class="rl-sec goal">
+          <div class="rl-sec-t">核心追求</div>
+          <div class="list">
+            <div><b>英雄级小小英雄</b></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="rlayer l2">
+        <span class="tag">中 R</span>
+        <div class="rl-sec">
+          <div class="rl-sec-t">核心参与的商业化活动</div>
+          <div class="list">
+            <div>赛博补给站（¥18）</div>
+            <div>普通月卡（¥25）</div>
+            <div>BP（¥29 / ¥49 / ¥79）</div>
+            <div>主题礼包（¥69）</div>
+            <div>时空魔典（活跃 × 付费）</div>
+            <div>寻宝召唤（约 ¥350）</div>
+            <div>棱彩召唤 · 普通神话 ¥600</div>
+          </div>
+        </div>
+        <div class="rl-sec goal">
+          <div class="rl-sec-t">核心追求</div>
+          <div class="list">
+            <div><b>低成本获取神话级小小英雄、竞技场</b></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="rlayer l3">
+        <span class="tag">大 R · 重度付费</span>
+        <div class="rl-sec">
+          <div class="rl-sec-t">核心参与的商业化活动</div>
+          <div class="list">
+            <div>棱彩召唤 · 普通神话 ¥600</div>
+            <div>棱彩召唤 · 至臻神话 ¥1,800</div>
+            <div>宝库召唤 ¥600 / ¥1,200 / ¥1,600</div>
+          </div>
+        </div>
+        <div class="rl-sec goal">
+          <div class="rl-sec-t">核心追求</div>
+          <div class="list">
+            <div><b>更多的神话小小英雄，至臻神话级小小英雄</b></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="rlayer l4">
+        <span class="tag">超 R · 身份象征</span>
+        <div class="rl-sec">
+          <div class="rl-sec-t">核心参与的商业化活动</div>
+          <div class="list">
+            <div>累计 ¥5,000+</div>
+            <div>神话级传送门（约 ¥5,000）</div>
+            <div>终极淘汰动画（约 ¥13,000）</div>
+            <div>VIP 次高（消耗 ¥2 万）</div>
+            <div>VIP 最高（消耗 ¥3.8 万，小小塔姆）</div>
+            <div>羁绊系统 · 进阶 / 高级收集</div>
+          </div>
+        </div>
+        <div class="rl-sec goal">
+          <div class="rl-sec-t">核心追求</div>
+          <div class="list">
+            <div><b>小小英雄全收集，特殊身份象征的装扮</b></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 6. 总结 & 机会点 -->
+  <section id="summary">
+    <h2 class="section"><span class="bar"></span>⑥ 整体总结 & 机会点</h2>
+    <div class="section-desc">既有体系在各层玩家都已较完整；下一步的增量空间在"中小 R 的抽奖缺位"与"小小英雄本身的纵深挖掘"。</div>
+
+    <div class="grid2" style="margin-bottom:14px">
+      <div class="card">
+        <div style="font-weight:800;margin-bottom:6px">✅ 现状判断</div>
+        <div style="font-size:13px;color:var(--text)">
+          金铲铲对不同付费层级的商业化内容设计较完整：
+          <ul style="margin:8px 0 0 18px;padding:0">
+            <li>小 R 有 <b>破冰 + 订阅 + BP + 活跃置换</b> 的组合拳；</li>
+            <li>中 R 有 <b>主题礼包 + 月卡 + 时空魔典 + 寻宝召唤</b>；</li>
+            <li>大 R / 超 R 通过 <b>棱彩 / 宝库召唤 + 羁绊 + VIP</b> 构建身份表达。</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card">
+        <div style="font-weight:800;margin-bottom:6px">🎯 核心判断</div>
+        <div style="font-size:13px;color:var(--text)">
+          <ul style="margin:0 0 0 18px;padding:0">
+            <li><b>小小英雄</b>始终是玩家核心在意的资产；</li>
+            <li>与其横向拓展（对标王者、和平这类大 DAU 通用外观），不如 <b>纵向挖深小小英雄本身的消费空间</b>；</li>
+            <li>三套召唤系统定价一致，玩家天然以"品质 × 价格"横向比对。</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- 一个完整的机会方案 -->
+    <div class="opp-plan">
+      <div class="opp-hd">
+        <div class="opp-hd-t">💡 机会方案 · 为中小 R 构建差异化的"抽奖 × 活跃"出口</div>
+      </div>
+      <div class="opp-grid-3">
+        <div class="opp-card step-1">
+          <div class="opp-step">定位</div>
+          <div class="opp-t">中小 R 的差异化抽奖</div>
+          <div class="opp-b">
+            当前召唤系统本质为大 R 设计，即便做了破冰 / 持续折扣，对小 R 吸引仍有限。<br>
+            给中小 R 做 <b>定位差异化、体验差异化、定价接近</b>的抽奖，例如"十连即出货"节奏、或"小 R 版棱彩召唤"。
+          </div>
+        </div>
+        <div class="opp-arrow">→</div>
+        <div class="opp-card step-2">
+          <div class="opp-step">策略</div>
+          <div class="opp-t">下放抽奖形式到英雄级小小英雄</div>
+          <div class="opp-b">
+            英雄级小小英雄已在 BP、活跃等多处被当作奖励。以其为抽奖核心奖励：<br>
+            <b>低价抽奖 + 简单保底</b>，让小 R 也能博概率、同时配合活跃发放，不与大 R 神话池子冲突。
+          </div>
+        </div>
+        <div class="opp-arrow">→</div>
+        <div class="opp-card step-3">
+          <div class="opp-step">方法</div>
+          <div class="opp-t">抽奖 × 活跃的二游形态</div>
+          <div class="opp-b">
+            结合 <b>符文精粹系统 + 召唤系统</b>：活跃积累货币，货币直接投入奖池；主要奖池为英雄级小小英雄。<br>
+            并对 <b>普通英雄全收集</b> 设阶段性奖励，让小 R 形成"攒一笔抽神话 vs 收集 10 个普通英雄"的选择。
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    数据来自源 xmind：<span class="soft">金铲铲商业化结构.xmind</span> · 整理：商业化内容 + 投放渠道 + 召唤系统 + 羁绊阶梯 + 玩家分层 + 机会方案
+  </footer>
+
+</div>
+</body>
+</html>
